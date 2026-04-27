@@ -1,1 +1,4 @@
 /.vscode
+*.mat
+/uplink/saved_model
+/downlink/saved_model
