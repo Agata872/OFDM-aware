@@ -3,3 +3,6 @@
 /uplink/saved_model
 /downlink/saved_model
 venv/
+/downlink/_pycache_/
+uplink/__pycache__/
+uplink/plot_result/
