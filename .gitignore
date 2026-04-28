@@ -2,3 +2,4 @@
 *.mat
 /uplink/saved_model
 /downlink/saved_model
+venv/
