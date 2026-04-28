@@ -2,13 +2,7 @@
 *.mat
 /uplink/saved_model
 /downlink/saved_model
-<<<<<<< HEAD
 venv/
 /downlink/_pycache_/
 uplink/__pycache__/
 uplink/plot_result/
-=======
-/venv/
-/downlink/_pycache_/
-uplink/__pycache__/
->>>>>>> c24c82ceb8931df0bc86ef4394a466fa01f44ef9
