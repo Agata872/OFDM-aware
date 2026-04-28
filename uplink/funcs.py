@@ -10,8 +10,8 @@ from scipy.io import savemat
 from scipy.io import loadmat
 
 
-# device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# device = 'cpu'
 
 def pow2db(y):
     return 10 * np.log10(y)
