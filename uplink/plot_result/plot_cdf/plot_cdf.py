@@ -54,5 +54,5 @@ plt.legend(loc='lower center', ncol=2, bbox_to_anchor=(0.5, 1.05), borderaxespad
 plt.xlabel("Average per-user rate (bps/Hz)", fontsize=14)
 plt.ylabel("Cumulative distribution function (CDF)", fontsize=14)
 plt.grid()
-plt.savefig("cell19_M{}_B{}_K{}_cdf_ul_under.pdf".format(M, B, K), format="pdf", bbox_inches="tight")
+plt.savefig(str(script_dir / "cell19_M{}_B{}_K{}_cdf_ul_under.pdf".format(M, B, K)), format="pdf", bbox_inches="tight")
 plt.show()

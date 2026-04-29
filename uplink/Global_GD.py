@@ -159,15 +159,8 @@ for ee in range(num_iter+1):  # first iteration is ini
         print("trained W is saved")
 
 
-plt.title("Global CSI Convergence K={}, lr={}".format(K, step_size))
-plt.plot(rate_convergence)
-plt.xlabel("Iterations")
-plt.ylabel("Rate (bps/Hz)")
-plt.grid()
-plt.show()
-
-
 result_dict = {'rate_list': rate_convergence}
+(script_dir / "plot_result/plot_convergence").mkdir(parents=True, exist_ok=True)
 savemat(script_dir / "plot_result/plot_convergence/GD_M{}_B{}_K{}_step{}.mat".format(M, B, K, num_iter), result_dict)
 
 with torch.no_grad():
@@ -175,6 +168,14 @@ with torch.no_grad():
 
 sorted_rate = torch.sort(per_sample_rate.squeeze())[0].cpu().detach().numpy()
 cdf_dict = {'sorted_rate': sorted_rate}
+(script_dir / "plot_result/plot_cdf").mkdir(parents=True, exist_ok=True)
 savemat(script_dir / "plot_result/plot_cdf/GlobalGD_cell{}_M{}_Nc{}_B{}_K{}.mat".format(Ball, M, Nc, B, K), cdf_dict)
+
+plt.title("Global CSI Convergence K={}, lr={}".format(K, step_size))
+plt.plot(rate_convergence)
+plt.xlabel("Iterations")
+plt.ylabel("Rate (bps/Hz)")
+plt.grid()
+plt.show()
 
 print('end')

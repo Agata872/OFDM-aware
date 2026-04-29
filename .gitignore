@@ -5,3 +5,4 @@
 venv/
 /downlink/_pycache_/
 uplink/__pycache__/
+*.pdf
