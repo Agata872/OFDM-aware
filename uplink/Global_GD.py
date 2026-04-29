@@ -170,4 +170,11 @@ plt.show()
 result_dict = {'rate_list': rate_convergence}
 savemat(script_dir / "plot_result/plot_convergence/GD_M{}_B{}_K{}_step{}.mat".format(M, B, K, num_iter), result_dict)
 
+with torch.no_grad():
+    _, per_sample_rate = compute_rate(H_set, W_global_set, Theta_set, sigma2_zx_ratio, return_per_sample=True)
+
+sorted_rate = torch.sort(per_sample_rate.squeeze())[0].cpu().detach().numpy()
+cdf_dict = {'sorted_rate': sorted_rate}
+savemat(script_dir / "plot_result/plot_cdf/GlobalGD_cell{}_M{}_Nc{}_B{}_K{}.mat".format(Ball, M, Nc, B, K), cdf_dict)
+
 print('end')

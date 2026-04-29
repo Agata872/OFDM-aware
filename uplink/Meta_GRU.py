@@ -285,5 +285,13 @@ with torch.no_grad():
                                "GRU_M{}_B{}_K{}_step{}.mat".format(M, B, K, time_step))
     savemat(result_path, result_dict)
 
+    _, per_sample_test = compute_rate(H_set_test, W_set_test, Theta_set_test, sigma2_zx_ratio,
+                                      return_per_sample=True)
+    sorted_rate = torch.sort(per_sample_test.squeeze())[0].cpu().detach().numpy()
+    cdf_result_dict = {'sorted_rate': sorted_rate}
+    cdf_result_path = os.path.join(script_dir, 'plot_result', 'plot_cdf',
+                                   "GRU_T4_cell{}_M{}_Nc{}_B{}_K{}.mat".format(Ball, M, Nc, B, K))
+    savemat(cdf_result_path, cdf_result_dict)
+
 
 print('end')
