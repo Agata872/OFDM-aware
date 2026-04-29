@@ -5,4 +5,3 @@
 venv/
 /downlink/_pycache_/
 uplink/__pycache__/
-uplink/plot_result/
