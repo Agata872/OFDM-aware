@@ -11,6 +11,8 @@ from scipy.io import loadmat
 import pathlib
 import os
 
+script_dir = pathlib.Path(__file__).parent
+
 # The flag below controls whether to allow TF32 on matmul. This flag defaults to True.
 torch.backends.cuda.matmul.allow_tf32 = False
 # The flag below controls whether to allow TF32 on cuDNN. This flag defaults to True.
@@ -78,7 +80,7 @@ torch.manual_seed(1)
 start_time = time.time()
 
 ##### load dataset
-testset = loadmat("test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
+testset = loadmat(script_dir / "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
                   format(batch_size, M, Ball, B, Nc, n_UELocSamples))
 UELocs = torch.tensor(testset['UELocs']).to(device)
 dist_set = torch.tensor(testset['dist_set']).to(device)  # (bs, Ball, Nall)
@@ -88,15 +90,15 @@ H_set_sorted = torch.tensor(testset['H_set_sorted']).to(device)  # (bs, Ball, M,
 
 ### initialization
 if load_W == 1:  # load trained W
-    W_load_dict = loadmat("./saved_model/trained_W/W_global_localini{}_bs{}_Nc{}_B{}_M{}_K{}_UEpow{}.mat".
+    W_load_dict = loadmat(script_dir / "saved_model/trained_W/W_global_localini{}_bs{}_Nc{}_B{}_M{}_K{}_UEpow{}.mat".
                      format(ini_local, batch_size, Nc, B, M, K, UEpow))
     W_global_set = {}
     for bb in range(Ball):
         W_global_set[bb] = torch.tensor(W_load_dict[str(bb)], requires_grad=True, device=device)
 elif ini_local == 1:  # initialize with local CSI
-    model_path = './saved_model/UserCentricDNN_cell{}_Nc{}_M{}_B{}_K{}'.format(Ball, Nc, M, B, K)
+    model_path = script_dir / 'saved_model/UserCentricDNN_cell{}_Nc{}_M{}_B{}_K{}'.format(Ball, Nc, M, B, K)
     DNN_local = FCNN().to(device)
-    DNN_local.load_state_dict(torch.load(model_path + "/DNN_local.zip"))
+    DNN_local.load_state_dict(torch.load(model_path / "DNN_local.zip"))
     with torch.no_grad():
         W_localCSI_dict = DNN_local(H_set_sorted)
     W_global_set = {}
@@ -152,7 +154,7 @@ for ee in range(num_iter+1):  # first iteration is ini
         save_dict = {}
         for bb in range(Ball):
             save_dict[str(bb)] = W_global_set[bb].detach().cpu().numpy()
-        savemat("./saved_model/trained_W/W_global_localini{}_bs{}_Nc{}_B{}_M{}_K{}_UEpow{}.mat".
+        savemat(script_dir / "saved_model/trained_W/W_global_localini{}_bs{}_Nc{}_B{}_M{}_K{}_UEpow{}.mat".
                 format(ini_local, batch_size, Nc, B, M, K, UEpow), save_dict)
         print("trained W is saved")
 
@@ -166,6 +168,6 @@ plt.show()
 
 
 result_dict = {'rate_list': rate_convergence}
-savemat("./plot_result/plot_convergence/GD_M{}_B{}_K{}_step{}.mat".format(M, B, K, num_iter), result_dict)
+savemat(script_dir / "plot_result/plot_convergence/GD_M{}_B{}_K{}_step{}.mat".format(M, B, K, num_iter), result_dict)
 
 print('end')
