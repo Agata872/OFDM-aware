@@ -262,7 +262,8 @@ if num_epochs != 0:
 
 ### testing
 with torch.no_grad():
-    testset_path = os.path.join(script_dir, "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
+    root_dir = os.path.dirname(script_dir)
+    testset_path = os.path.join(root_dir, "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
                                 format(test_size, M, Ball, B, Nc, n_UELocSamples))
     testset = loadmat(testset_path)
     UELocs_test = torch.tensor(testset['UELocs']).to(device)
