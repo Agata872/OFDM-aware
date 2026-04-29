@@ -46,7 +46,7 @@ quant_scaling = 3
 print(f'Using {device} device')
 
 ini_local = 1  # start with local CSI based DNN
-load_W = 1  # load trained W
+load_W = 0  # load trained W
 
 
 class FCNN(nn.Module):
@@ -88,8 +88,8 @@ H_set_sorted = torch.tensor(testset['H_set_sorted']).to(device)  # (bs, Ball, M,
 
 ### initialization
 if load_W == 1:  # load trained W
-    W_load_dict = loadmat("./saved_model/trained_W/W_global_localini{}_bs{}_Nc{}_B{}_M{}_K{}.mat".
-                     format(ini_local, batch_size, Nc, B, M, K))
+    W_load_dict = loadmat("./saved_model/trained_W/W_global_localini{}_bs{}_Nc{}_B{}_M{}_K{}_UEpow{}.mat".
+                     format(ini_local, batch_size, Nc, B, M, K, UEpow))
     W_global_set = {}
     for bb in range(Ball):
         W_global_set[bb] = torch.tensor(W_load_dict[str(bb)], requires_grad=True, device=device)
