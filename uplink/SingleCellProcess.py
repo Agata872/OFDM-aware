@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 import torch
 from funcs import *
@@ -33,8 +34,10 @@ print(f'Using {device} device')
 
 torch.manual_seed(1)
 
+root_dir = Path(__file__).resolve().parent.parent
+
 ##### load dataset
-testset = loadmat("test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
+testset = loadmat(root_dir / "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
                   format(batch_size, M, Ball, B, Nc, n_UELocSamples))
 H_set = torch.tensor(testset['H_set'], dtype=torch.double).to(device)  # (bs, Ball, M, Nall)
 

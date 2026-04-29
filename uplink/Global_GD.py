@@ -30,7 +30,7 @@ batch_size = 2000
 n_UELocSamples = 50
 
 step_size = 0.001
-num_iter = 2
+num_iter = 7
 
 bg_noise = -169  # dBm/Hz
 bandwidth = 20e6  # Hz

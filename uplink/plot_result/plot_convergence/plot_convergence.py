@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import numpy as np
+from pathlib import Path
 
 
 Ball = 19
@@ -13,11 +14,13 @@ N = Ball * Nc
 step_rnn = 7
 step_GD = 7
 
+base_dir = Path(__file__).resolve().parent
+
 overhead = np.array([((2*ii)*K*N + K*N) for ii in range(step_GD+1)]) / (M*N + K*M)
 
-GRU = loadmat("GRU_M{}_B{}_K{}_step{}.mat".format(M, B, K, step_rnn))['rate_list']
+GRU = loadmat(base_dir / "GRU_M{}_B{}_K{}_step{}.mat".format(M, B, K, step_rnn))['rate_list']
 # GRU_EVD = loadmat("GRU_EVD_M{}_B{}_K{}_step{}.mat".format(M, B, K, step_rnn))['rate_list']
-GD = loadmat("GD_M{}_B{}_K{}_step{}.mat".format(M, B, K, step_GD))['rate_list']
+GD = loadmat(base_dir / "GD_M{}_B{}_K{}_step{}.mat".format(M, B, K, step_GD))['rate_list']
 
 
 font = {'family': 'Times New Roman',
@@ -52,5 +55,5 @@ ax2.set_ylabel("Communication overhead ratio to global CSI", fontsize=15)
 plt.tight_layout()
 plt.grid()
 
-plt.savefig("cell19_M{}_B{}_convergence_K{}_ul.pdf".format(M, B, K), format="pdf", bbox_inches="tight")
+plt.savefig(base_dir / "cell19_M{}_B{}_convergence_K{}_ul.pdf".format(M, B, K), format="pdf", bbox_inches="tight")
 plt.show()
