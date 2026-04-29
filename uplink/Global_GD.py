@@ -80,7 +80,7 @@ torch.manual_seed(1)
 start_time = time.time()
 
 ##### load dataset
-testset = loadmat(script_dir / "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
+testset = loadmat(script_dir.parent / "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
                   format(batch_size, M, Ball, B, Nc, n_UELocSamples))
 UELocs = torch.tensor(testset['UELocs']).to(device)
 dist_set = torch.tensor(testset['dist_set']).to(device)  # (bs, Ball, Nall)
