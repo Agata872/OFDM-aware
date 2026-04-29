@@ -1,3 +1,13 @@
+import os
+import argparse
+
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument('--gpu', type=int, choices=[0, 1],
+                    help='Physical GPU id to use (sets CUDA_VISIBLE_DEVICES).')
+args, _ = parser.parse_known_args()
+if args.gpu is not None:
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
+
 import numpy as np
 from funcs import *
 import matplotlib.pyplot as plt
@@ -7,8 +17,8 @@ import torch.optim as optim  # for gradient descent
 from torch import linalg as LA
 import time
 import pathlib
+
 from scipy.io import loadmat
-import os
 
 # The flag below controls whether to allow TF32 on matmul. This flag defaults to True.
 torch.backends.cuda.matmul.allow_tf32 = False
@@ -44,10 +54,10 @@ quant_scaling = 3
 ### training configs
 print(f'Using {device} device')
 learning_rate = 1e-4
-batch_size = 500
-val_size = 2000
+batch_size = 500   # 500
+val_size = 2000    # 2000
 test_size = 2000
-batch_per_epoch = 50
+batch_per_epoch = 50  # 50
 num_epochs = 5
 initial_run = 1  # 0: continue to train, 1: start from scratch
 
@@ -174,8 +184,12 @@ if num_epochs != 0:
     plt.show()
 
 ### testing
-testset_path = os.path.join(script_dir, "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
-                            format(test_size, M, Ball, B, Nc, n_UELocSamples))
+testset_filename = "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".format(
+    test_size, M, Ball, B, Nc, n_UELocSamples
+)
+repo_dir = os.path.dirname(script_dir)
+candidate_testset_paths = [os.path.join(repo_dir, testset_filename)]
+testset_path = next((path for path in candidate_testset_paths if os.path.exists(path)), None)
 testset = loadmat(testset_path)
 UELocs_test = torch.tensor(testset['UELocs']).to(device)
 dist_set_test = torch.tensor(testset['dist_set']).to(device)  # (bs, Ball, Nall)
