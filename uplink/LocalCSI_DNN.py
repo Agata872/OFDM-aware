@@ -18,7 +18,7 @@ from torch import linalg as LA
 import time
 import pathlib
 
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 
 # The flag below controls whether to allow TF32 on matmul. This flag defaults to True.
 torch.backends.cuda.matmul.allow_tf32 = False
@@ -202,10 +202,17 @@ bits_test = torch.ones((K,)).to(device) * Q_bits  # equal allocation
 with torch.no_grad():
     W_set_test = DNN_local(H_set_test_sorted)  # dict: Ball * (bs, K, M)
     ### compute rate
-    rate_test = compute_rate(H_set_test, W_set_test, Theta_set_test, sigma2_zx_ratio)
+    rate_test, per_sample_test = compute_rate(H_set_test, W_set_test, Theta_set_test, sigma2_zx_ratio, return_per_sample=True)
     print("Test rate: {}".format("%.5f" % rate_test.item()))
     if use_quant:
         rate_test_q = compute_rate_quant(H_set_test, W_set_test, Theta_set_test, sigma2_zx_ratio, bits_test, quant_scaling, if_test=1)
         print("Test rate after quantization: {}".format("%.5f" % rate_test_q.item()))
+
+##### save results
+sorted_rate = (torch.sort(per_sample_test.squeeze())[0]).cpu().detach().numpy()
+folder_path = os.path.join(script_dir, "plot_result", "plot_cdf")
+os.makedirs(folder_path, exist_ok=True)
+savemat(os.path.join(folder_path, "DNN_cell{}_M{}_Nc{}_B{}_K{}.mat".format(Ball, M, Nc, B, K)),
+        {'sorted_rate': sorted_rate})
 
 print('end')

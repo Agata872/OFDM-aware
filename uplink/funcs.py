@@ -309,7 +309,7 @@ def func_EVD(H_set, sigma2_zx_ratio, K):
     return W_EVD_set
 
 
-def compute_rate(H_set, W_set, Theta_set, sig2r):
+def compute_rate(H_set, W_set, Theta_set, sig2r, return_per_sample=False):
     """
     compute averaged sum rate
     :param H_set: (bs, Ball, M, Nall)
@@ -370,15 +370,8 @@ def compute_rate(H_set, W_set, Theta_set, sig2r):
     per_UE_rate = sum_rate / Nall
     mean_per_UE_rate = torch.mean(per_UE_rate)  # average over samples in a batch
 
-    ##### save & plot cdf curve
-    # sorted_rate = (torch.sort(per_UE_rate.squeeze())[0]).cpu().detach().numpy()  # x-axis
-    # plt.plot(sorted_rate, np.arange(bs) / bs)
-    # plt.show()
-    # result_dict = {'sorted_rate': sorted_rate}
-    # folder_path = "./plot_result/plot_cdf/"
-    # method = "GlobalGD"
-    # savemat(folder_path + method + '_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K), result_dict)
-
+    if return_per_sample:
+        return mean_per_UE_rate, per_UE_rate
     return mean_per_UE_rate
 
 

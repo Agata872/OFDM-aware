@@ -7,7 +7,8 @@ import torch.optim as optim  # for gradient descent
 from torch import linalg as LA
 import time
 import math
-from scipy.io import loadmat
+import pathlib
+from scipy.io import loadmat, savemat
 
 # The flag below controls whether to allow TF32 on matmul. This flag defaults to True.
 torch.backends.cuda.matmul.allow_tf32 = False
@@ -44,9 +45,10 @@ batch_size = 2000
 torch.manual_seed(1)
 start_time = time.time()
 
+script_dir = pathlib.Path(__file__).resolve().parent
 
-testset = loadmat("test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
-                  format(batch_size, M, Ball, B, Nc, n_UELocSamples))
+testset = loadmat(str(script_dir.parent / "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
+                  format(batch_size, M, Ball, B, Nc, n_UELocSamples)))
 UELocs = torch.tensor(testset['UELocs']).to(device)
 dist_set = torch.tensor(testset['dist_set']).to(device)  # (bs, Ball, Nall)
 Theta_set = torch.tensor(testset['Theta_set']).to(device)  # (bs, Nall, B)
@@ -55,29 +57,28 @@ H_set = torch.tensor(testset['H_set']).to(device)  # (bs, M, Nall)
 
 ###
 # ------------ EVD beta ----------------
-# Phi_set = {}
-# for bb in range(Ball):
-#     Phi_b = torch.zeros(batch_size, Nall).to(device)
-#     for ii in range(Nall):
-#         d_bi = dist_set[:, bb, ii].view(-1, 1)  # (bs, 1)
-#         beta_bi_db = 180 - 147.5 + 20 * np.log10(2.9) + 29 * torch.log10(d_bi * 1000)
-#         beta_bi = db2pow(-beta_bi_db) / scaling_factor
-#         Phi_b[:, ii] = beta_bi.squeeze() * M
-#         Phi_set[bb] = torch.diag_embed(Phi_b)
-#
-# W_EVD_set = {}
-# for bb in range(Ball):
-#     Hb = H_set[:, bb, :, :]
-#     diag_Nall = torch.diag_embed(torch.ones((batch_size, Nall)).to(device))
-#     Phi_sum = torch.zeros_like(Phi_set[bb])
-#     for jj in range(Ball):
-#         if jj != bb:
-#             Phi_sum += Phi_set[jj]
-#     Sigma_new = Hb @ LA.inv(Phi_sum + sigma2_zx_ratio*diag_Nall) @ Hb.mH  # (bs, M, M)
-#     U, S, V = torch.svd(Sigma_new)
-#     W_bb = U[:, :, 0:K].mH  # (bs, K, M)
-#     # W_bb = torch.randn(batch_size, K, M).to(device)
-#     W_EVD_set[bb] = gramschmidt(W_bb)
+Phi_set = {}
+for bb in range(Ball):
+    Phi_b = torch.zeros(batch_size, Nall).to(device)
+    for ii in range(Nall):
+        d_bi = dist_set[:, bb, ii].view(-1, 1)  # (bs, 1)
+        beta_bi_db = 180 - 147.5 + 20 * np.log10(2.9) + 29 * torch.log10(d_bi * 1000)
+        beta_bi = db2pow(-beta_bi_db) / scaling_factor
+        Phi_b[:, ii] = beta_bi.squeeze() * M
+    Phi_set[bb] = torch.diag_embed(Phi_b)
+
+W_EVD_beta_set = {}
+for bb in range(Ball):
+    Hb = H_set[:, bb, :, :]
+    diag_Nall = torch.diag_embed(torch.ones((batch_size, Nall)).to(device))
+    Phi_sum = torch.zeros_like(Phi_set[bb])
+    for jj in range(Ball):
+        if jj != bb:
+            Phi_sum += Phi_set[jj]
+    Sigma_new = Hb @ LA.inv(Phi_sum + sigma2_zx_ratio*diag_Nall) @ Hb.mH  # (bs, M, M)
+    U, S, V = torch.svd(Sigma_new)
+    W_bb = U[:, :, 0:K].mH  # (bs, K, M)
+    W_EVD_beta_set[bb] = gramschmidt(W_bb)
 
 # ----------------------------------
 # ------------ EVD ----------------
@@ -96,11 +97,23 @@ for bb in range(Ball):
 # -------------------------------------
 
 with torch.no_grad():
-    rate_EVD = compute_rate(H_set, W_EVD_set, Theta_set, sigma2_zx_ratio)
-    print(rate_EVD.item())
+    rate_EVD, per_sample_EVD = compute_rate(H_set, W_EVD_set, Theta_set, sigma2_zx_ratio, return_per_sample=True)
+    print(f"EVD rate: {rate_EVD.item()}")
+    rate_EVD_beta, per_sample_EVD_beta = compute_rate(H_set, W_EVD_beta_set, Theta_set, sigma2_zx_ratio, return_per_sample=True)
+    print(f"EVD_beta rate: {rate_EVD_beta.item()}")
     if use_quant:
         rate_EVD_q = compute_rate_quant(H_set, W_EVD_set, Theta_set, sigma2_zx_ratio, Q_bits, quant_scaling, if_test=1)
-        print(rate_EVD_q.item())
+        print(f"EVD quant rate: {rate_EVD_q.item()}")
+
+##### save results
+folder_path = script_dir / "plot_result/plot_cdf"
+folder_path.mkdir(parents=True, exist_ok=True)
+sorted_rate_EVD = (torch.sort(per_sample_EVD.squeeze())[0]).cpu().detach().numpy()
+savemat(str(folder_path / "EVD_cell{}_M{}_Nc{}_B{}_K{}.mat".format(Ball, M, Nc, B, K)),
+        {'sorted_rate': sorted_rate_EVD})
+sorted_rate_EVD_beta = (torch.sort(per_sample_EVD_beta.squeeze())[0]).cpu().detach().numpy()
+savemat(str(folder_path / "EVD_beta_cell{}_M{}_Nc{}_B{}_K{}.mat".format(Ball, M, Nc, B, K)),
+        {'sorted_rate': sorted_rate_EVD_beta})
 
 print('Time used: {}min{}s'
       .format("%.0f" % ((time.time() - start_time) / 60), "%.0f" % ((time.time() - start_time) % 60)))

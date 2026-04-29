@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 from scipy.io import loadmat
+
+script_dir = Path(__file__).resolve().parent
 
 
 M = 32
@@ -14,22 +17,22 @@ test_size = 2000
 # antenna_reduction = loadmat(method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, K, Nc, B, K))['sorted_rate']
 
 method = "SingleCell"
-SingleCell = loadmat(method+'_cell{}_M{}_Nc{}_B{}.mat'.format(Ball, M, Nc, B))['sorted_rate']
+SingleCell = loadmat(str(script_dir / (method+'_cell{}_M{}_Nc{}_B{}.mat'.format(Ball, M, Nc, B))))['sorted_rate']
 
 method = "EVD"
-EVD = loadmat(method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))['sorted_rate']
+EVD = loadmat(str(script_dir / (method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))))['sorted_rate']
 
 method = "EVD_beta"
-EVD_beta = loadmat(method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))['sorted_rate']
+EVD_beta = loadmat(str(script_dir / (method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))))['sorted_rate']
 
 method = "DNN"
-DNN = loadmat(method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))['sorted_rate']
+DNN = loadmat(str(script_dir / (method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))))['sorted_rate']
 
 method = "GlobalGD"
-globalGD_randini = loadmat(method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))['sorted_rate']
+globalGD_randini = loadmat(str(script_dir / (method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))))['sorted_rate']
 
 method = "GRU_T4"
-GRU_T4 = loadmat(method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))['sorted_rate']
+GRU_T4 = loadmat(str(script_dir / (method+'_cell{}_M{}_Nc{}_B{}_K{}.mat'.format(Ball, M, Nc, B, K))))['sorted_rate']
 
 
 font = {'family': 'Times New Roman',

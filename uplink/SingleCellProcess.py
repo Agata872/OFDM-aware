@@ -34,7 +34,8 @@ print(f'Using {device} device')
 
 torch.manual_seed(1)
 
-root_dir = Path(__file__).resolve().parent.parent
+script_dir = Path(__file__).resolve().parent
+root_dir = script_dir.parent
 
 ##### load dataset
 testset = loadmat(root_dir / "test_bs{}_M{}_Ball{}_B{}_Nc{}_samples{}_seed42.mat".
@@ -69,15 +70,17 @@ for nn in range(Nall):
 mean_sum_rate = torch.mean(sum_rate)  # average over samples in a batch
 
 ##### save & plot cdf curve
-"""
+
 sorted_rate = (torch.sort(sum_rate.squeeze())[0]).cpu().detach().numpy()  # x-axis
+result_dict = {'sorted_rate': sorted_rate}
+folder_path = script_dir / "plot_result/plot_cdf"
+folder_path.mkdir(parents=True, exist_ok=True)
+method = "SingleCell"
+savemat(folder_path / (method + '_cell{}_M{}_Nc{}_B{}.mat'.format(Ball, M, Nc, B)), result_dict)
+
 plt.plot(sorted_rate, np.arange(batch_size) / batch_size)
 plt.show()
-result_dict = {'sorted_rate': sorted_rate}
-folder_path = "./plot_result/plot_cdf/"
-method = "SingleCell"
-savemat(folder_path + method + '_cell{}_M{}_Nc{}_B{}.mat'.format(Ball, M, Nc, B), result_dict)
-"""
+
 
 print(mean_sum_rate.item())
 
